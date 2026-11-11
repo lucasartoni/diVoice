@@ -19,12 +19,89 @@ struct HotkeyTests {
     #expect(!m.isHolding)
   }
 
-  @Test func shortTapIsCancelled() {
+  @Test func shortTapIsCancelledOnceTheDoubleTapWindowPasses() {
     var m = HotkeyStateMachine(triggers: [.fn])
     _ = m.handle(fn(true, at: 1000))
-    #expect(m.handle(fn(false, at: 1100)) == [.cancel(.tooShort)])
+    // It may be the first of a double tap: nothing yet, the window closes 400 ms after the release.
+    #expect(m.handle(fn(false, at: 1100)) == [])
+    #expect(m.deadline == 1500 * ms)
+    #expect(m.tick(now: 1400 * ms) == [])
+    #expect(m.tick(now: 1500 * ms) == [.cancel(.tooShort)])
+    #expect(m.deadline == nil)
     // Right after, it can start again.
-    #expect(m.handle(fn(true, at: 1200)) == [.start(.dictation, timestamp: 1200 * ms)])
+    #expect(m.handle(fn(true, at: 1600)) == [.start(.dictation, timestamp: 1600 * ms)])
+  }
+
+  @Test func aQuickHoldStillStopsAfterTheWindow() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    _ = m.handle(fn(true, at: 1000))
+    #expect(m.handle(fn(false, at: 1250)) == [])
+    #expect(m.tick(now: 1650 * ms) == [.stop(.dictation, timestamp: 1250 * ms, heldNs: 250 * ms)])
+  }
+
+  @Test func doubleTapLocksAndTheNextPressStops() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    #expect(m.handle(fn(true, at: 1000)) == [.start(.dictation, timestamp: 1000 * ms)])
+    #expect(m.handle(fn(false, at: 1100)) == [])
+    #expect(m.handle(fn(true, at: 1300)) == [.lock(.dictation, key: "fn")])
+    #expect(m.isLocked)
+    // Releasing the second tap goes on hands-free; the window is closed.
+    #expect(m.handle(fn(false, at: 1400)) == [])
+    #expect(m.deadline == nil)
+    #expect(m.tick(now: 9000 * ms) == [])
+    #expect(m.isHolding)
+    // The next press stops, timed from the first press; its release is ignored.
+    #expect(m.handle(fn(true, at: 9000)) == [.stop(.dictation, timestamp: 9000 * ms, heldNs: 8000 * ms)])
+    #expect(m.handle(fn(false, at: 9100)) == [])
+    #expect(!m.isHolding)
+    #expect(m.handle(fn(true, at: 9500)) == [.start(.dictation, timestamp: 9500 * ms)])
+  }
+
+  @Test func doubleTapWithCtrlLocksScribe() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    #expect(m.handle(fn(true, at: 1000, extra: ctrl)) == [.start(.scribe, timestamp: 1000 * ms)])
+    _ = m.handle(fn(false, at: 1080, extra: ctrl))
+    #expect(m.handle(fn(true, at: 1250, extra: ctrl)) == [.lock(.scribe, key: "fn")])
+    _ = m.handle(fn(false, at: 1330, extra: ctrl))
+    // Fn alone stops Scribe, which then rewrites what was said.
+    #expect(m.handle(fn(true, at: 5000)) == [.stop(.scribe, timestamp: 5000 * ms, heldNs: 4000 * ms)])
+  }
+
+  @Test func ctrlOnTheSecondTapTurnsItIntoScribe() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    _ = m.handle(fn(true, at: 1000))
+    _ = m.handle(fn(false, at: 1100))
+    #expect(m.handle(fn(true, at: 1300, extra: ctrl)) == [.modeChanged(.scribe), .lock(.scribe, key: "fn")])
+  }
+
+  @Test func handsFreeOtherKeysPassAndEscCancels() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    _ = m.handle(fn(true, at: 1000))
+    _ = m.handle(fn(false, at: 1100))
+    _ = m.handle(fn(true, at: 1300))
+    _ = m.handle(fn(false, at: 1400))
+    // Typing or Ctrl doesn't stop or change it.
+    #expect(m.handle(.keyDown(keyCode: 0, flags: 0, timestamp: 2000 * ms)) == [])
+    #expect(m.handle(.flagsChanged(keyCode: 59, flags: ctrl, timestamp: 2100 * ms)) == [])
+    #expect(m.isLocked)
+    #expect(m.handle(.keyDown(keyCode: KeyCode.escape, flags: 0, timestamp: 3000 * ms)) == [.cancel(.escape)])
+    #expect(!m.isHolding)
+  }
+
+  @Test func aSecondTapTooLateEndsTheFirstAndStartsAgain() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    _ = m.handle(fn(true, at: 1000))
+    _ = m.handle(fn(false, at: 1100))
+    // The tick was missed: the late press resolves the tap, then starts a new session.
+    #expect(m.handle(fn(true, at: 1600)) == [.cancel(.tooShort), .start(.dictation, timestamp: 1600 * ms)])
+  }
+
+  @Test func typingRightAfterATapEndsIt() {
+    var m = HotkeyStateMachine(triggers: [.fn])
+    _ = m.handle(fn(true, at: 1000))
+    _ = m.handle(fn(false, at: 1100))
+    #expect(m.handle(.keyDown(keyCode: 0, flags: 0, timestamp: 1200 * ms)) == [.cancel(.tooShort)])
+    #expect(!m.isHolding)
   }
 
   @Test func ctrlPlusFnStartsScribe() {
@@ -95,7 +172,7 @@ struct HotkeyTests {
   }
 
   @Test func backwardsTimestampGivesZeroDuration() {
-    var m = HotkeyStateMachine(triggers: [.fn], minHoldNs: 0)
+    var m = HotkeyStateMachine(triggers: [.fn], minHoldNs: 0, tapMaxNs: 0)
     _ = m.handle(fn(true, at: 2000))
     #expect(m.handle(fn(false, at: 1000)) == [.stop(.dictation, timestamp: 1000 * ms, heldNs: 0)])
   }

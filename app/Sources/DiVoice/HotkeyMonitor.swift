@@ -17,6 +17,8 @@ final class HotkeyMonitor {
 
   private let lock = NSLock()
   private var machine: HotkeyStateMachine
+  /// Ends a double tap window: the state machine only sees key events.
+  private let tickQueue = DispatchQueue(label: "app.wibo.divoice.hotkeys.tick", qos: .userInteractive)
   private var tap: CFMachPort?
   private var runLoop: CFRunLoop?
   private var timebase = mach_timebase_info_data_t()
@@ -73,6 +75,23 @@ final class HotkeyMonitor {
     runLoop = nil
   }
 
+  /// A quick tap may be the first of a double tap: when its window closes without a second
+  /// one, the state machine ends the session.
+  private func scheduleTick(at deadline: UInt64) {
+    let now = MonotonicClock.nowNs()
+    let delay = deadline > now ? Double(deadline - now) / 1_000_000_000 : 0
+    tickQueue.asyncAfter(deadline: .now() + delay + 0.005) { [weak self] in
+      guard let self else { return }
+      self.lock.lock()
+      let actions = self.machine.tick(now: MonotonicClock.nowNs())
+      self.lock.unlock()
+      guard !actions.isEmpty else { return }
+      DispatchQueue.main.async {
+        for action in actions { self.onAction?(action) }
+      }
+    }
+  }
+
   fileprivate func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
     switch type {
     case .tapDisabledByTimeout, .tapDisabledByUserInput:
@@ -107,7 +126,9 @@ final class HotkeyMonitor {
 
     lock.lock()
     let actions = machine.handle(keyEvent)
+    let deadline = machine.deadline
     lock.unlock()
+    if let deadline { scheduleTick(at: deadline) }
     guard !actions.isEmpty else { return Unmanaged.passUnretained(event) }
 
     DispatchQueue.main.async {

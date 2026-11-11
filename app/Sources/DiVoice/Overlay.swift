@@ -15,6 +15,8 @@ final class OverlayModel: ObservableObject {
 
   @Published var phase: Phase = .hidden
   @Published var mode: DictationMode = .dictation
+  /// Hands-free after a double tap: the id of the key whose next press ends it.
+  @Published var lockedKey: String?
   @Published var levels = [Float](repeating: 0, count: OverlayModel.bars)
 }
 
@@ -111,12 +113,17 @@ final class OverlayController: NSObject, NSWindowDelegate {
 
   func showRecording(mode: DictationMode) {
     model.mode = mode
+    model.lockedKey = nil
     model.levels = [Float](repeating: 0, count: OverlayModel.bars)
     show(.recording)
   }
 
   func setMode(_ mode: DictationMode) {
     model.mode = mode
+  }
+
+  func setLocked(key: String?) {
+    model.lockedKey = key
   }
 
   func pushLevel(_ level: Float) {
@@ -197,6 +204,15 @@ final class OverlayController: NSObject, NSWindowDelegate {
 struct OverlayView: View {
   @ObservedObject var model: OverlayModel
 
+  /// What ends a hands-free dictation: the key that started it.
+  static func finishLabel(_ key: String) -> String {
+    switch key {
+    case HotkeyTrigger.rightCommand.id: String(localized: "Right ⌘ to finish")
+    case HotkeyTrigger.rightOption.id: String(localized: "Right ⌥ to finish")
+    default: String(localized: "Fn to finish")
+    }
+  }
+
   var body: some View {
     ZStack(alignment: .bottom) {
       if model.phase != .hidden {
@@ -239,6 +255,8 @@ struct OverlayView: View {
       HStack(spacing: 10) {
         Waveform(levels: model.levels)
         if model.mode == .scribe { Pill("Scribe", icon: "sparkles") }
+        // Hands-free: no key to hold, and the way out.
+        if let key = model.lockedKey { Pill(verbatim: Self.finishLabel(key), icon: "lock.fill") }
       }
     case .processing where model.mode == .scribe:
       HStack(spacing: 8) {

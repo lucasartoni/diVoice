@@ -2,6 +2,14 @@
 
 All notable changes to diVoice. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org).
 
+## 0.5.1 — Hands-free
+
+Dictate without holding Fn.
+
+### Added
+
+- **Hands-free dictation.** Double-tap Fn and speak without holding it; press Fn once to finish and the text is processed as usual. With Ctrl held, the double tap starts Scribe hands-free. The overlay shows which key finishes it, Esc cancels, and it ends by itself just before 10 minutes.
+
 ## 0.5.0 — Context and style
 
 diVoice reads the conversation, writes in the tone you choose for each kind of app, and learns from your corrections.
