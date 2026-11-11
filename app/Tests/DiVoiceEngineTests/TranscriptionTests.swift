@@ -290,6 +290,21 @@ private func elevenLabs(_ connector: FakeConnector, http: FakeHTTP = FakeHTTP())
     #expect(fields.filter { $0.0 == "keyterms" }.count == 100)
   }
 
+  @Test func elevenLabsDefaultsToScribeV3AndMovesTheOldDefaults() {
+    let defaults = TranscriptionSettings.defaults(.elevenlabs)
+    #expect(defaults.realtimeModel == "scribe_v3_live")
+    #expect(defaults.batchModel == "scribe_v3")
+    #expect(ModelCatalog.transcriptionCapabilities(.elevenlabs, "scribe_v3_live").realtime)
+    #expect(ModelCatalog.transcriptionCapabilities(.elevenlabs, "scribe_v3").batch)
+    #expect(ModelCatalog.transcriptionModels(.elevenlabs, realtime: true).map(\.id) == ["scribe_v3_live", "scribe_v2_realtime"])
+    // The Scribe v2 defaults of 0.5.x move to v3; anything chosen by hand stays.
+    let old = TranscriptionSettings(provider: .elevenlabs, mode: .hybrid, realtimeModel: "scribe_v2_realtime", batchModel: "scribe_v2")
+    #expect(old.upgradingDefaults() == defaults)
+    let chosen = TranscriptionSettings(provider: .elevenlabs, mode: .batch, realtimeModel: "scribe_v2_realtime", batchModel: "scribe_v2")
+    #expect(chosen.upgradingDefaults() == chosen)
+    #expect(TranscriptionSettings.defaults(.mistral).upgradingDefaults() == .defaults(.mistral))
+  }
+
   @Test func elevenLabsIsTranscriptionOnly() {
     #expect(!ProviderID.elevenlabs.supportsChat)
     #expect(ProviderID.chatProviders == [.mistral, .openai])

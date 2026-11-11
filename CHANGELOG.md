@@ -2,6 +2,14 @@
 
 All notable changes to diVoice. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org).
 
+## 0.5.3 — Scribe v3
+
+ElevenLabs's newest transcription models.
+
+### Changed
+
+- **ElevenLabs transcribes with Scribe v3**, released on 10 November 2026: `scribe_v3_live` while you speak and `scribe_v3` at release. Settings still on the old Scribe v2 defaults move to v3; a model you typed yourself stays. Scribe v2 remains available in the model fields. It works through an organization's server too, with no change to diServer.
+
 ## 0.5.2 — Hands-free fix
 
 ### Fixed

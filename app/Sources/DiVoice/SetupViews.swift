@@ -733,7 +733,7 @@ struct ModelsView: View {
           ForEach(ProviderID.allCases) { provider in
             CardRow(
               LocalizedStringKey(provider.displayName),
-              detail: provider.supportsChat ? nil : LocalizedStringKey(String(localized: "Transcription only (Scribe v2)"))
+              detail: provider.supportsChat ? nil : LocalizedStringKey(String(localized: "Transcription only"))
             ) {
               KeyField(model: setup, provider: provider).frame(width: 380)
             }

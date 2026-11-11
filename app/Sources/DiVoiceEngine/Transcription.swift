@@ -370,7 +370,7 @@ public struct OpenAITranscription: TranscriptionService {
 
 // MARK: - ElevenLabs
 
-/// ElevenLabs Scribe v2: batch with a multipart upload of raw PCM, realtime over WebSocket with
+/// ElevenLabs Scribe (v3 by default, v2 alike): batch with a multipart upload of raw PCM, realtime over WebSocket with
 /// the settings in the URL and a manual commit at release. The vocabulary goes in `keyterms`.
 public struct ElevenLabsTranscription: TranscriptionService {
   public let provider = ProviderID.elevenlabs

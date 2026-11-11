@@ -322,7 +322,7 @@
 "Your instructions" = "Istruzioni tue";
 "diVoice recognizes most apps by itself. Assign the others to a kind of app, or a website by a word of its window title." = "diVoice riconosce da sé la maggior parte delle app. Assegna le altre a un tipo di app, o un sito tramite una parola del titolo della finestra.";
 "diVoice recognizes the app you're writing in and adapts the text to it. Choose the tone for each kind of app, and add your own instructions: they apply to dictation and to Scribe." = "diVoice riconosce l'app in cui scrivi e adatta il testo. Scegli il tono per ogni tipo di app e aggiungi le tue istruzioni: valgono per la dettatura e per Scribe.";
-"Transcription only (Scribe v2)" = "Solo trascrizione (Scribe v2)";
+"Transcription only" = "Solo trascrizione";
 "Use the text on screen as context" = "Usa il testo sullo schermo come contesto";
 "When you start dictating, diVoice reads the conversation and the text around the cursor, to spell names and match the tone. It goes only to the AI provider and is never saved. Never in password fields." = "Quando inizi a dettare, diVoice legge la conversazione e il testo intorno al cursore, per scrivere bene i nomi e adattare il tono. Va solo al provider di IA e non viene mai salvato. Mai nei campi password.";
 "Context" = "Contesto";
