@@ -292,7 +292,9 @@ private func elevenLabs(_ connector: FakeConnector, http: FakeHTTP = FakeHTTP())
 
   @Test func elevenLabsIsTranscriptionOnly() {
     #expect(!ProviderID.elevenlabs.supportsChat)
-    #expect(ProviderID.chatProviders == [.mistral, .openai])
+    #expect(ProviderID.chatProviders == [.mistral, .openai, .compatible])
+    #expect(ProviderID.transcriptionProviders == [.mistral, .openai, .elevenlabs])
+    #expect(ProviderID.fullProviders == [.mistral, .openai])
     let pipeline = PipelineSettings.defaults(.elevenlabs)
     #expect(pipeline.transcription.provider == .elevenlabs)
     #expect(pipeline.transcription.mode == .hybrid)

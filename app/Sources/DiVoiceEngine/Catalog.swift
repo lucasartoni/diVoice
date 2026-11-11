@@ -5,6 +5,9 @@ public enum ProviderID: String, Codable, Sendable, CaseIterable, Identifiable {
   case openai
   /// Transcription only (Scribe v2): cleanup and Scribe stay with a chat provider.
   case elevenlabs
+  /// Chat only (cleanup and Scribe): any server that speaks OpenAI's chat completions, such as
+  /// LiteLLM, Ollama or vLLM, at the address the user gives.
+  case compatible
 
   public var id: String { rawValue }
 
@@ -13,6 +16,7 @@ public enum ProviderID: String, Codable, Sendable, CaseIterable, Identifiable {
     case .mistral: "Mistral"
     case .openai: "OpenAI"
     case .elevenlabs: "ElevenLabs"
+    case .compatible: "OpenAI-compatible"
     }
   }
 
@@ -21,13 +25,15 @@ public enum ProviderID: String, Codable, Sendable, CaseIterable, Identifiable {
     case .mistral: URL(string: "https://api.mistral.ai")!
     case .openai: URL(string: "https://api.openai.com")!
     case .elevenlabs: URL(string: "https://api.elevenlabs.io")!
+    // LiteLLM's default; the app always uses the address typed by the user.
+    case .compatible: URL(string: "http://localhost:4000")!
     }
   }
 
   /// PCM sample rate the provider's realtime transcription expects.
   public var sampleRate: Int {
     switch self {
-    case .mistral, .elevenlabs: 16_000
+    case .mistral, .elevenlabs, .compatible: 16_000
     case .openai: 24_000  // OpenAI Realtime accepts only 24 kHz PCM
     }
   }
@@ -37,6 +43,17 @@ public enum ProviderID: String, Codable, Sendable, CaseIterable, Identifiable {
 
   /// The providers that can run the whole pipeline.
   public static var chatProviders: [ProviderID] { allCases.filter(\.supportsChat) }
+
+  /// Whether it has transcription models.
+  public var supportsTranscription: Bool { self != .compatible }
+
+  public static var transcriptionProviders: [ProviderID] { allCases.filter(\.supportsTranscription) }
+
+  /// The providers that can run the whole pipeline by themselves.
+  public static var fullProviders: [ProviderID] { allCases.filter { $0.supportsChat && $0.supportsTranscription } }
+
+  /// The providers an organization's server can use for cleanup and Scribe.
+  public static let serverChatProviders: [ProviderID] = [.mistral, .openai]
 
   /// The header that carries the API key: ElevenLabs uses its own, the others a bearer token.
   public var keyHeader: String? { self == .elevenlabs ? "xi-api-key" : nil }
@@ -178,7 +195,8 @@ public enum ModelCatalog {
       return ChatCapabilities(reasoning: [], prediction: true, temperature: true, fastTier: false)
     case .openai:
       return ChatCapabilities(reasoning: [.none, .low, .medium, .high], prediction: false, temperature: false, fastTier: true)
-    case .elevenlabs:
+    case .elevenlabs, .compatible:
+      // Only what every OpenAI-compatible server accepts.
       return ChatCapabilities(reasoning: [], prediction: false, temperature: true, fastTier: false)
     }
   }
@@ -189,6 +207,7 @@ public enum ModelCatalog {
     case .mistral: return TranscriptionCapabilities(realtime: id.contains("realtime"), batch: !id.contains("realtime"), keywords: false)
     case .openai: return TranscriptionCapabilities(realtime: true, batch: true, keywords: id.hasPrefix("gpt-transcribe") || id.hasPrefix("gpt-live"))
     case .elevenlabs: return TranscriptionCapabilities(realtime: id.contains("realtime"), batch: !id.contains("realtime"), keywords: true)
+    case .compatible: return TranscriptionCapabilities(realtime: false, batch: false, keywords: false)
     }
   }
 }
@@ -216,7 +235,8 @@ public struct TranscriptionSettings: Codable, Sendable, Equatable {
 
   public static func defaults(_ provider: ProviderID) -> TranscriptionSettings {
     switch provider {
-    case .mistral:
+    case .mistral, .compatible:
+      // An OpenAI-compatible server only runs cleanup and Scribe: transcription stays with Mistral.
       TranscriptionSettings(provider: .mistral, mode: .hybrid, realtimeModel: "voxtral-mini-transcribe-realtime-3-0", batchModel: "voxtral-mini-transcribe-3-0")
     case .openai:
       // gpt-transcribe on the realtime socket: the audio is uploaded while speaking and
@@ -253,6 +273,8 @@ public struct ChatSettings: Codable, Sendable, Equatable {
     case .mistral, .elevenlabs: ChatSettings(provider: .mistral, model: "mistral-small-2603", prediction: true)
     // Fast tier on: about 0.5 s less per dictation for twice the price of a few hundred tokens.
     case .openai: ChatSettings(provider: .openai, model: "gpt-6-luna", fastTier: true)
+    // The models are the server's own: the user types the name.
+    case .compatible: ChatSettings(provider: .compatible, model: "")
     }
   }
 
@@ -262,6 +284,7 @@ public struct ChatSettings: Codable, Sendable, Equatable {
     // (Small without reasoning is as fast but does; Large 4 waits 5 s or more). See docs/latency.md.
     case .mistral, .elevenlabs: ChatSettings(provider: .mistral, model: "mistral-medium-2604")
     case .openai: ChatSettings(provider: .openai, model: "gpt-6.1-sol")
+    case .compatible: ChatSettings(provider: .compatible, model: "")
     }
   }
 }

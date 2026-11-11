@@ -484,7 +484,8 @@ public enum ProviderClients {
   ) -> TranscriptionService {
     switch provider {
     case .mistral: MistralTranscription(endpoint: endpoint, http: http, connector: connector, now: now)
-    case .openai: OpenAITranscription(endpoint: endpoint, http: http, connector: connector, now: now)
+    // An OpenAI-compatible server is never picked for transcription; if it were, OpenAI's API is the closest.
+    case .openai, .compatible: OpenAITranscription(endpoint: endpoint, http: http, connector: connector, now: now)
     case .elevenlabs: ElevenLabsTranscription(endpoint: endpoint, http: http, connector: connector, now: now)
     }
   }

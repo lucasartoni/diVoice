@@ -52,7 +52,7 @@ scripts/bench.sh --help
 
   `--clips <folder>` uses a `clips.json` with your own recordings instead.
 - **Configurations:** a provider plus options: transcription mode and models, cleanup model (also from the other provider), predicted output, OpenAI fast tier.
-- **Keys:** the ones saved in diVoice; macOS asks once whether the bench may read them. Otherwise `MISTRAL_API_KEY`, `OPENAI_API_KEY` and `ELEVENLABS_API_KEY`.
+- **Keys:** the ones saved in diVoice; macOS asks once whether the bench may read them. Otherwise `MISTRAL_API_KEY`, `OPENAI_API_KEY` and `ELEVENLABS_API_KEY`; for an OpenAI-compatible server, `COMPATIBLE_API_KEY` and its address in `COMPATIBLE_BASE_URL` (for example `mistral,cleanup=compatible/my-model`).
 - **Report:** per configuration:
   - p50 and p95 from release to text;
   - transcription and cleanup times;

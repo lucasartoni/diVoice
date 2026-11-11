@@ -253,6 +253,12 @@ enum DiVoiceBench {
       guard let key = Keys.key(provider) else {
         throw EngineError("no \(provider.displayName) key: set \(provider.rawValue.uppercased())_API_KEY or save it in diVoice")
       }
+      // An OpenAI-compatible server: at COMPATIBLE_BASE_URL, or LiteLLM's default address.
+      if provider == .compatible, let address = ProcessInfo.processInfo.environment["COMPATIBLE_BASE_URL"] {
+        guard let server = ProviderEndpoint.compatibleBaseURL(address) else { throw EngineError("COMPATIBLE_BASE_URL is not a server address") }
+        endpoints[provider] = .compatible(server, apiKey: key)
+        continue
+      }
       endpoints[provider] = .direct(provider, apiKey: key)
     }
 
@@ -264,7 +270,7 @@ enum DiVoiceBench {
 
     if options.listModels {
       for (provider, endpoint) in endpoints.sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
-        var request = URLRequest(url: provider.defaultBaseURL.appendingPathComponent("v1/models"))
+        var request = URLRequest(url: endpoint.baseURL.appendingPathComponent("v1/models"))
         request.setValue("Bearer \(endpoint.apiKey)", forHTTPHeaderField: "Authorization")
         let (data, _) = try await session.data(for: request)
         let models = ((try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["data"] as? [[String: Any]] ?? [])

@@ -51,7 +51,7 @@ public protocol ChatService: Sendable {
   func complete(_ call: ChatCall, timeout: Double) async throws -> String
 }
 
-/// `/v1/chat/completions` for Mistral and OpenAI, with each provider's parameter names.
+/// `/v1/chat/completions` for Mistral, OpenAI and OpenAI-compatible servers, with each provider's parameter names.
 public struct ChatCompletionsClient: ChatService {
   public let provider: ProviderID
   private let endpoint: ProviderEndpoint
@@ -90,12 +90,13 @@ public struct ChatCompletionsClient: ChatService {
     case .openai:
       body["max_completion_tokens"] = call.maxTokens + reasoningRoom
       if call.fastTier, caps.fastTier { body["service_tier"] = "fast" }
-    case .elevenlabs:
-      // No chat models: the settings never pick it for cleanup or Scribe.
+    case .elevenlabs, .compatible:
+      // ElevenLabs has no chat models: the settings never pick it for cleanup or Scribe.
       body["max_tokens"] = call.maxTokens + reasoningRoom
     }
     if let prediction = call.prediction, caps.prediction { body["prediction"] = ["type": "content", "content": prediction] }
-    if let cacheKey = call.cacheKey { body["prompt_cache_key"] = cacheKey }
+    // An OpenAI-compatible server may refuse parameters it doesn't know.
+    if let cacheKey = call.cacheKey, provider != .compatible { body["prompt_cache_key"] = cacheKey }
     if let schema = call.jsonSchema { body["response_format"] = schema }
     return body
   }
