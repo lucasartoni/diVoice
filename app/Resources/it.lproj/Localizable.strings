@@ -332,3 +332,14 @@
 "Learn from my corrections" = "Impara dalle mie correzioni";
 "Learned from your corrections" = "Imparato dalle tue correzioni";
 "When you fix a dictated text, diVoice learns: names go into your dictionary, and after a few corrections in a kind of app it notes how you like to write there. The corrections stay on this Mac for 7 days." = "Quando correggi un testo dettato, diVoice impara: i nomi entrano nel tuo dizionario e, dopo qualche correzione in un tipo di app, annota come ti piace scrivere lì. Le correzioni restano su questo Mac per 7 giorni.";
+"Add your OpenAI-compatible server's address in diVoice's settings" = "Aggiungi l'indirizzo del tuo server compatibile con OpenAI nelle impostazioni di diVoice";
+"OpenAI-compatible server address missing" = "Manca l'indirizzo del server compatibile con OpenAI";
+"OpenAI-compatible server" = "Server compatibile con OpenAI";
+"The key of your server. If it doesn't ask for one, type any word." = "La chiave del tuo server. Se non ne richiede una, scrivi una parola qualsiasi.";
+"This doesn't look like a server address." = "Non sembra l'indirizzo di un server.";
+"The provider that turns your voice into text. ElevenLabs only transcribes: the AI provider above writes the clean text." = "Il provider che trasforma la tua voce in testo. ElevenLabs trascrive soltanto: il testo pulito lo scrive il provider IA scelto sopra.";
+"The address of your LiteLLM, Ollama or other OpenAI-compatible server, and the model it should use for cleanup and Scribe." = "L'indirizzo del tuo server LiteLLM, Ollama o di un altro server compatibile con OpenAI, e il modello da usare per la pulizia e Scribe.";
+"Model name" = "Nome del modello";
+"Server address" = "Indirizzo del server";
+"LiteLLM, Ollama or any other server with OpenAI's chat completions API." = "LiteLLM, Ollama o qualsiasi altro server con l'API chat completions di OpenAI.";
+"Cleanup and Scribe only" = "Solo pulizia e Scribe";

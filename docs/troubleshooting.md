@@ -16,6 +16,7 @@ Start with **Settings › Models › Verify**: it checks each step with your key
 |---|---|
 | **Microphone not available** | Allow diVoice in **System Settings › Privacy & Security › Microphone**, and check that an input device is connected. |
 | **Mistral API key missing** (or OpenAI) | Paste your key in **Settings › Models**. |
+| **OpenAI-compatible server address missing** | Type your server's address in **Settings › Models › API keys**, for example `http://localhost:4000`. |
 | **… HTTP 401** | The key is wrong or revoked. Paste it again in **Settings › Models** (in an organization, tell your admin). |
 | **… HTTP 404** | The model name is misspelled or your account can't use it. Pick one from the list, then Verify. |
 | **… HTTP 429** | The provider is limiting your account. Wait a minute, or raise your limits in the provider's console. |

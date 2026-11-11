@@ -8,7 +8,7 @@ diVoice uses three models, each for one step:
 | **Cleanup** | Turns the raw text into what you meant to write (every dictation) |
 | **Scribe** | Edits your dictation, or changes the selected text (Ctrl+Fn) |
 
-Each step can use [Mistral](https://mistral.ai) or [OpenAI](https://openai.com), with any model the provider offers. Transcription can also use [ElevenLabs](https://elevenlabs.io) Scribe v2 (ElevenLabs has no chat models, so cleanup and Scribe stay with Mistral or OpenAI). Choose them in **Settings › Models**; **Use Mistral for everything** and **Use OpenAI for everything** restore the defaults.
+Each step can use [Mistral](https://mistral.ai) or [OpenAI](https://openai.com), with any model the provider offers. Transcription can also use [ElevenLabs](https://elevenlabs.io) Scribe v2 (ElevenLabs has no chat models, so cleanup and Scribe stay with Mistral or OpenAI). Cleanup and Scribe can also use an [OpenAI-compatible server](#openai-compatible-servers) such as LiteLLM. Choose them in **Settings › Models**, or at the first launch; **Use Mistral for everything** and **Use OpenAI for everything** restore the defaults.
 
 ![Models](images/settings-models-light.png)
 
@@ -32,6 +32,19 @@ Choosing ElevenLabs for transcription uses `scribe_v2_realtime` while you speak 
 - **Dictionary:** your terms go to ElevenLabs as `keyterms`: at most 100 per dictation (50 while streaming, of up to 20 characters each). ElevenLabs charges 20% more for transcriptions with keyterms, and beyond 100 terms it bills every request as at least 20 seconds: diVoice never sends more than 100.
 - **Context:** while streaming, the text already in the field goes as `previous_text`, so the transcription continues it.
 - **Speed and accuracy:** measure them on your own voice with `divoice-bench elevenlabs` against `mistral` (see [Latency](latency.md)).
+
+### OpenAI-compatible servers
+
+Cleanup and Scribe can run on any server that speaks OpenAI's chat completions API: a [LiteLLM](https://www.litellm.ai) proxy in front of the models you prefer, [Ollama](https://ollama.com), vLLM, LM Studio or a hosted gateway. Transcription stays with Mistral, OpenAI or ElevenLabs.
+
+1. In **Settings › Models › API keys**, under **OpenAI-compatible**, type the **server address**, for example `http://localhost:4000` (with or without the final `/v1`), and save its key. If your server doesn't ask for a key, type any word.
+2. Choose **OpenAI-compatible** as the provider of Cleanup, Scribe or both, and type the model name as your server knows it (for LiteLLM, the `model_name` in its configuration).
+3. Click **Verify**.
+
+- diVoice sends only the standard parameters (`model`, `messages`, `stream`, `temperature`, `max_tokens`): no reasoning effort, predicted outputs or fast processing.
+- The server must stream its answers (server-sent events), as LiteLLM and Ollama do.
+- Plain `http` works for a server on your Mac or your local network; anywhere else the address must be `https`.
+- The speed depends on your server and model: check the first token time with Verify and aim for under a second for cleanup.
 
 ## Transcription modes
 
@@ -65,6 +78,7 @@ Get a key:
 - Mistral: [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys)
 - OpenAI: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 - ElevenLabs: [elevenlabs.io/app/settings/api-keys](https://elevenlabs.io/app/settings/api-keys)
+- OpenAI-compatible server: from the server itself (for LiteLLM, its master key or a virtual key)
 
 ## Cost
 
@@ -72,4 +86,4 @@ You pay the provider for what you use, at their prices. As an order of magnitude
 
 ## In an organization
 
-The admin chooses the models for everyone, and the organization's server holds the keys. **Settings › Models** shows the models in use, read-only, with Verify. Transcription through an organization's server uses Mistral, or ElevenLabs with [diServer](https://github.com/tommasoseita/diServer) 0.6.0 or later (the admin saves its key and picks it in Settings › Organization); cleanup and Scribe can use Mistral or OpenAI. See [Organizations](organizations.md).
+The admin chooses the models for everyone, and the organization's server holds the keys. **Settings › Models** shows the models in use, read-only, with Verify. Transcription through an organization's server uses Mistral, or ElevenLabs with [diServer](https://github.com/tommasoseita/diServer) 0.6.0 or later (the admin saves its key and picks it in Settings › Organization); cleanup and Scribe can use Mistral or OpenAI (an OpenAI-compatible server is for personal mode only). See [Organizations](organizations.md).

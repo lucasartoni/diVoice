@@ -17,6 +17,7 @@ struct BenchConfig: Equatable {
         rt=<model>, batch=<model>   only one of the two
         delay=<ms>                  Mistral streaming delay
         cleanup=[provider/]<model>  cleanup model, optionally from the other provider
+                                    (compatible/<model>: the server at COMPATIBLE_BASE_URL)
         scribe=[provider/]<model>   Scribe model (with --scribe)
         scribe-reasoning=<level>    Scribe's reasoning: none, low, medium, high
         prediction=on|off           predicted outputs for cleanup

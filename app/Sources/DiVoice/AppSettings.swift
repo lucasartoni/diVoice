@@ -14,6 +14,8 @@ final class AppSettings: ObservableObject {
 
   /// Providers and models for transcription, cleanup and Scribe.
   @Published var pipeline: PipelineSettings { didSet { save(pipeline, "pipeline") } }
+  /// Address of the OpenAI-compatible server (LiteLLM, Ollama, ...) for cleanup and Scribe.
+  @Published var compatibleBaseURL: String { didSet { defaults.set(compatibleBaseURL, forKey: "compatibleBaseURL") } }
   /// Two-letter code or "auto".
   @Published var language: String { didSet { defaults.set(language, forKey: "language") } }
   @Published var fnEnabled: Bool { didSet { defaults.set(fnEnabled, forKey: "fnEnabled") } }
@@ -47,6 +49,7 @@ final class AppSettings: ObservableObject {
       "learnFromCorrections": true,
     ])
     pipeline = Self.load(PipelineSettings.self, "pipeline", defaults) ?? .defaults(.mistral)
+    compatibleBaseURL = defaults.string(forKey: "compatibleBaseURL") ?? ""
     language = defaults.string(forKey: "language") ?? Self.systemLanguage
     fnEnabled = defaults.bool(forKey: "fnEnabled")
     alternativeTrigger = defaults.string(forKey: "alternativeTrigger") ?? "rightCommand"
@@ -77,6 +80,17 @@ final class AppSettings: ObservableObject {
   func useProvider(_ provider: ProviderID) {
     pipeline = .defaults(provider)
   }
+
+  /// Uses a provider for cleanup and Scribe, with its default models; the transcription stays as it is.
+  func useChatProvider(_ provider: ProviderID) {
+    var updated = pipeline
+    updated.cleanup = .cleanupDefaults(provider)
+    updated.scribe = .scribeDefaults(provider)
+    pipeline = updated
+  }
+
+  /// The OpenAI-compatible server's base URL; nil while the address is missing or not valid.
+  var compatibleServer: URL? { ProviderEndpoint.compatibleBaseURL(compatibleBaseURL) }
 
   private func save<T: Encodable>(_ value: T, _ key: String) {
     if let data = try? JSONEncoder().encode(value) { defaults.set(data, forKey: key) }

@@ -51,7 +51,7 @@ Pay only the AI you choose, at cost, or join your team's server.
 ## Requirements
 
 - A Mac with Apple silicon, macOS 14 Sonoma or later.
-- In personal mode, an API key from [Mistral](https://console.mistral.ai/api-keys) or [OpenAI](https://platform.openai.com/api-keys). With a team, nothing: your organization's server holds the keys.
+- In personal mode, an API key from [Mistral](https://console.mistral.ai/api-keys) or [OpenAI](https://platform.openai.com/api-keys); cleanup and Scribe can also run on your own OpenAI-compatible server, such as LiteLLM. With a team, nothing: your organization's server holds the keys.
 
 ## Install
 

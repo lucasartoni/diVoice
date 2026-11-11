@@ -42,6 +42,36 @@ public struct ProviderEndpoint: Sendable, Equatable {
     ProviderEndpoint(baseURL: provider.defaultBaseURL, apiKey: apiKey, keyHeader: provider.keyHeader)
   }
 
+  /// The base URL of an OpenAI-compatible server from the address the user typed: with or
+  /// without the scheme, a final slash, `/v1` or the whole `/v1/chat/completions`.
+  /// Nil when it isn't an http(s) address.
+  public static func compatibleBaseURL(_ address: String) -> URL? {
+    var text = address.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !text.isEmpty else { return nil }
+    if !text.contains("://") {
+      // Without a scheme: plain http for this Mac and the local network, https for the rest.
+      let local = #"^(localhost|\[[0-9a-fA-F:]+\]|\d+\.\d+\.\d+\.\d+|[^/:]+\.local)(:\d+)?(/.*)?$"#
+      text = (text.range(of: local, options: .regularExpression) != nil ? "http://" : "https://") + text
+    }
+    guard var components = URLComponents(string: text), let scheme = components.scheme?.lowercased(), ["http", "https"].contains(scheme),
+      let host = components.host, !host.isEmpty
+    else { return nil }
+    var path = components.path
+    for suffix in ["/", "/chat/completions", "/", "/v1", "/"] {
+      while path.hasSuffix(suffix) { path.removeLast(suffix.count) }
+    }
+    components.scheme = scheme
+    components.path = path
+    components.query = nil
+    components.fragment = nil
+    return components.url
+  }
+
+  /// An OpenAI-compatible server at `baseURL`, with a bearer key.
+  public static func compatible(_ baseURL: URL, apiKey: String) -> ProviderEndpoint {
+    ProviderEndpoint(baseURL: baseURL, apiKey: apiKey)
+  }
+
   func url(_ path: String, query: [URLQueryItem] = []) -> URL {
     var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
     components.path = components.path.replacingOccurrences(of: "/+$", with: "", options: .regularExpression) + path

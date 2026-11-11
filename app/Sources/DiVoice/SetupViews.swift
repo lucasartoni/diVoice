@@ -50,8 +50,11 @@ final class SetupModel: ObservableObject {
     return ProviderID.allCases.filter { settings.pipeline.providers.contains($0) && savedKeys[$0] == nil }
   }
 
+  /// The pipeline uses an OpenAI-compatible server whose address is still to add.
+  var missingServer: Bool { EngineFactory.missingServer(settings) }
+
   var isReady: Bool {
-    microphone == .authorized && accessibility && missingKeys.isEmpty
+    microphone == .authorized && accessibility && missingKeys.isEmpty && !missingServer
   }
 
   func refresh() {
@@ -225,11 +228,13 @@ struct KeyField: View {
   @ObservedObject var model: SetupModel
   let provider: ProviderID
 
-  private var keysPage: URL {
+  /// Where the provider's keys are created; an OpenAI-compatible server has its own.
+  private var keysPage: URL? {
     switch provider {
     case .mistral: URL(string: "https://console.mistral.ai/api-keys")!
     case .openai: URL(string: "https://platform.openai.com/api-keys")!
     case .elevenlabs: URL(string: "https://elevenlabs.io/app/settings/api-keys")!
+    case .compatible: nil
     }
   }
 
@@ -254,7 +259,29 @@ struct KeyField: View {
             .buttonStyle(.primary)
             .disabled((model.keyInput[provider] ?? "").trimmingCharacters(in: .whitespaces).isEmpty)
         }
-        Link("Create a key on \(keysPage.host ?? "")", destination: keysPage).font(.system(size: 11.5))
+        if let keysPage {
+          Link("Create a key on \(keysPage.host ?? "")", destination: keysPage).font(.system(size: 11.5))
+        } else {
+          Text("The key of your server. If it doesn't ask for one, type any word.").font(.system(size: 11.5)).foregroundStyle(.secondary)
+        }
+      }
+    }
+  }
+}
+
+/// The address of the OpenAI-compatible server for cleanup and Scribe.
+struct CompatibleServerField: View {
+  @ObservedObject var settings: AppSettings
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      TextField("", text: $settings.compatibleBaseURL, prompt: Text(verbatim: "http://localhost:4000"))
+        .textFieldStyle(.roundedBorder)
+        .font(.system(size: 12).monospaced())
+        .labelsHidden()
+        .autocorrectionDisabled()
+      if !settings.compatibleBaseURL.trimmingCharacters(in: .whitespaces).isEmpty, settings.compatibleServer == nil {
+        Text("This doesn't look like a server address.").font(.system(size: 11.5)).foregroundStyle(Theme.accent)
       }
     }
   }
@@ -320,16 +347,19 @@ struct ModelField: View {
     CardRow(title) {
       HStack(spacing: 6) {
         TextField("", text: $model).textFieldStyle(.roundedBorder).font(.system(size: 12).monospaced()).frame(width: 260)
-        Menu {
-          ForEach(suggestions) { info in
-            Button(info.name) { model = info.id }
+        // An OpenAI-compatible server has its own models: the name is typed by hand.
+        if !suggestions.isEmpty {
+          Menu {
+            ForEach(suggestions) { info in
+              Button(info.name) { model = info.id }
+            }
+          } label: {
+            Image(systemName: "chevron.up.chevron.down")
           }
-        } label: {
-          Image(systemName: "chevron.up.chevron.down")
+          .menuStyle(.borderlessButton)
+          .menuIndicator(.hidden)
+          .fixedSize()
         }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .fixedSize()
       }
     }
   }
@@ -361,9 +391,31 @@ struct OnboardingView: View {
     _usage = State(initialValue: usage)
   }
 
+  /// The provider for cleanup and Scribe. Choosing one that also transcribes uses it for everything;
+  /// an OpenAI-compatible server leaves the transcription as it is.
   private var provider: Binding<ProviderID> {
-    Binding(get: { settings.pipeline.cleanup.provider }, set: { settings.useProvider($0) })
+    Binding(
+      get: { settings.pipeline.cleanup.provider },
+      set: { $0.supportsTranscription ? settings.useProvider($0) : settings.useChatProvider($0) })
   }
+
+  private var transcriptionProvider: Binding<ProviderID> {
+    Binding(get: { settings.pipeline.transcription.provider }, set: { settings.pipeline.transcription = .defaults($0) })
+  }
+
+  /// One model for cleanup and Scribe on the OpenAI-compatible server; each can change later in Settings › Models.
+  private var compatibleModel: Binding<String> {
+    Binding(
+      get: { settings.pipeline.cleanup.model },
+      set: {
+        var pipeline = settings.pipeline
+        pipeline.cleanup.model = $0
+        pipeline.scribe.model = $0
+        settings.pipeline = pipeline
+      })
+  }
+
+  private var usesCompatible: Bool { settings.pipeline.cleanup.provider == .compatible }
 
   private var canStart: Bool { model.isReady && (org.membership != nil || usage == .personal) }
 
@@ -432,15 +484,42 @@ struct OnboardingView: View {
     }
 
     SetupStep(
-      title: "API key",
+      title: "Transcription",
+      detail: "The provider that turns your voice into text. ElevenLabs only transcribes: the AI provider above writes the clean text.",
+      ok: true
+    ) {
+      PillPicker(
+        selection: transcriptionProvider, options: ProviderID.transcriptionProviders.map { ($0, LocalizedStringKey($0.displayName)) }
+      )
+      .padding(.top, 2)
+    }
+
+    if usesCompatible {
+      SetupStep(
+        title: "OpenAI-compatible server",
+        detail: "The address of your LiteLLM, Ollama or other OpenAI-compatible server, and the model it should use for cleanup and Scribe.",
+        ok: !model.missingServer && !settings.pipeline.cleanup.model.isEmpty && !settings.pipeline.scribe.model.isEmpty
+      ) {
+        CompatibleServerField(settings: settings)
+        TextField("", text: compatibleModel, prompt: Text("Model name"))
+          .textFieldStyle(.roundedBorder)
+          .font(.system(size: 12).monospaced())
+          .labelsHidden()
+          .autocorrectionDisabled()
+      }
+    }
+
+    SetupStep(
+      title: settings.pipeline.providers.count > 1 ? "API keys" : "API key",
       detail: "Saved in this Mac's Keychain and sent only to the provider.",
       ok: model.missingKeys.isEmpty
     ) {
-      ForEach(settings.pipeline.providers.sorted { $0.rawValue < $1.rawValue }) { provider in
+      ForEach(ProviderID.allCases.filter(settings.pipeline.providers.contains)) { provider in
         KeyField(model: model, provider: provider)
       }
       if model.missingKeys.isEmpty {
         VerifyResults(model: model, role: .transcription)
+        if usesCompatible, !model.missingServer { VerifyResults(model: model, role: .cleanup) }
       }
     }
   }
@@ -731,11 +810,13 @@ struct ModelsView: View {
       CardPage {
         CardSection("API keys") {
           ForEach(ProviderID.allCases) { provider in
-            CardRow(
-              LocalizedStringKey(provider.displayName),
-              detail: provider.supportsChat ? nil : LocalizedStringKey(String(localized: "Transcription only (Scribe v2)"))
-            ) {
+            CardRow(LocalizedStringKey(provider.displayName), detail: keyDetail(provider).map { LocalizedStringKey($0) }) {
               KeyField(model: setup, provider: provider).frame(width: 380)
+            }
+            if provider == .compatible {
+              CardRow("Server address", detail: "LiteLLM, Ollama or any other server with OpenAI's chat completions API.") {
+                CompatibleServerField(settings: settings).frame(width: 380)
+              }
             }
             if provider != ProviderID.allCases.last { Divider() }
           }
@@ -743,7 +824,7 @@ struct ModelsView: View {
         }
         PipelineSections(pipeline: $settings.pipeline, setup: setup)
         HStack {
-          ForEach(ProviderID.chatProviders) { provider in
+          ForEach(ProviderID.fullProviders) { provider in
             Button("Use \(provider.displayName) for everything") { settings.useProvider(provider) }.buttonStyle(.secondary)
           }
         }
@@ -752,15 +833,26 @@ struct ModelsView: View {
   }
 }
 
+extension ModelsView {
+  /// What a provider that doesn't run the whole pipeline is for.
+  fileprivate func keyDetail(_ provider: ProviderID) -> String? {
+    if !provider.supportsChat { return String(localized: "Transcription only (Scribe v2)") }
+    if !provider.supportsTranscription { return String(localized: "Cleanup and Scribe only") }
+    return nil
+  }
+}
+
 /// Transcription, cleanup and Scribe: provider and models, with Verify when `setup` is given.
 struct PipelineSections: View {
   @Binding var pipeline: PipelineSettings
   var setup: SetupModel?
   /// Providers the transcription can use (an organization's server supports fewer).
-  var transcriptionProviders = ProviderID.allCases
+  var transcriptionProviders = ProviderID.transcriptionProviders
+  /// Providers for cleanup and Scribe, which need chat models: not ElevenLabs, and through an
+  /// organization's server not an OpenAI-compatible server either.
+  var chatProviders = ProviderID.chatProviders
 
-  /// Cleanup and Scribe need chat models, which ElevenLabs doesn't have.
-  private func providerPicker(_ selection: Binding<ProviderID>, _ providers: [ProviderID] = ProviderID.chatProviders) -> some View {
+  private func providerPicker(_ selection: Binding<ProviderID>, _ providers: [ProviderID]) -> some View {
     CardRow("Provider") {
       PillPicker(selection: selection, options: providers.map { ($0, LocalizedStringKey($0.displayName)) })
     }
@@ -791,7 +883,7 @@ struct PipelineSections: View {
     }
 
     CardSection("Cleanup") {
-      providerPicker(Binding(get: { pipeline.cleanup.provider }, set: { pipeline.cleanup = .cleanupDefaults($0) }))
+      providerPicker(Binding(get: { pipeline.cleanup.provider }, set: { pipeline.cleanup = .cleanupDefaults($0) }), chatProviders)
       ModelField(title: "Model", model: $pipeline.cleanup.model, suggestions: ModelCatalog.chatModels(pipeline.cleanup.provider))
       let caps = ModelCatalog.chatCapabilities(pipeline.cleanup.provider, pipeline.cleanup.model)
       if caps.prediction {
@@ -811,7 +903,7 @@ struct PipelineSections: View {
     }
 
     CardSection("Scribe") {
-      providerPicker(Binding(get: { pipeline.scribe.provider }, set: { pipeline.scribe = .scribeDefaults($0) }))
+      providerPicker(Binding(get: { pipeline.scribe.provider }, set: { pipeline.scribe = .scribeDefaults($0) }), chatProviders)
       ModelField(title: "Model", model: $pipeline.scribe.model, suggestions: ModelCatalog.chatModels(pipeline.scribe.provider))
       if let setup { VerifyResults(model: setup, role: .scribe) }
     }

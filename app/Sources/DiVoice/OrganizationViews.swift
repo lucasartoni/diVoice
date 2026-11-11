@@ -341,7 +341,7 @@ struct AdminSections: View {
   /// The providers the server knows, from its key list: ElevenLabs only once diServer supports it.
   private var serverProviders: [ProviderID] {
     let known = model.settings?.keys.compactMap { ProviderID(rawValue: $0.provider) } ?? []
-    return known.isEmpty ? ProviderID.chatProviders : ProviderID.allCases.filter(known.contains)
+    return known.isEmpty ? ProviderID.serverChatProviders : ProviderID.allCases.filter(known.contains)
   }
 
   var body: some View {
@@ -460,7 +460,8 @@ struct AdminSections: View {
       if model.draft != nil {
         PipelineSections(
           pipeline: Binding(get: { model.draft ?? .defaults(.mistral) }, set: { model.draft = $0 }), setup: nil,
-          transcriptionProviders: [.mistral] + (serverProviders.contains(.elevenlabs) ? [.elevenlabs] : []))
+          transcriptionProviders: [.mistral] + (serverProviders.contains(.elevenlabs) ? [.elevenlabs] : []),
+          chatProviders: ProviderID.serverChatProviders)
         HStack {
           Button("Save models") { model.savePipeline() }
             .buttonStyle(.primary)

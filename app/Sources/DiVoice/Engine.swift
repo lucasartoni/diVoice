@@ -5,10 +5,12 @@ import Foundation
 enum EngineFactory {
   enum Missing: LocalizedError {
     case key(ProviderID)
+    case server
 
     var errorDescription: String? {
       switch self {
       case .key(let provider): String(localized: "Add your \(provider.displayName) API key in diVoice's settings")
+      case .server: String(localized: "Add your OpenAI-compatible server's address in diVoice's settings")
       }
     }
   }
@@ -27,6 +29,10 @@ enum EngineFactory {
 
   static func endpoint(_ provider: ProviderID) throws -> ProviderEndpoint {
     guard let key = KeyStore.key(provider) else { throw Missing.key(provider) }
+    if provider == .compatible {
+      guard let server = AppSettings.shared.compatibleServer else { throw Missing.server }
+      return .compatible(server, apiKey: key)
+    }
     return .direct(provider, apiKey: key)
   }
 
@@ -56,6 +62,11 @@ enum EngineFactory {
   static func activePipeline(_ settings: AppSettings) -> PipelineSettings {
     if let membership = OrgStore.shared.membership { return RelayServices.clientPipeline(membership.pipeline) }
     return settings.pipeline
+  }
+
+  /// Whether the pipeline uses an OpenAI-compatible server whose address is still to add.
+  static func missingServer(_ settings: AppSettings) -> Bool {
+    OrgStore.shared.membership == nil && settings.pipeline.providers.contains(.compatible) && settings.compatibleServer == nil
   }
 
   /// Keys still to add: none with an organization, whose server holds them.

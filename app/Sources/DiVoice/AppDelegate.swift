@@ -183,7 +183,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   private var needsSetup: Bool {
-    !settings.onboardingCompleted || !EngineFactory.activeMissingKeys(settings).isEmpty || !Permissions.accessibility
+    !settings.onboardingCompleted || !EngineFactory.activeMissingKeys(settings).isEmpty || EngineFactory.missingServer(settings) || !Permissions.accessibility
       || Permissions.microphone != .authorized
   }
 
@@ -208,6 +208,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     if let provider = EngineFactory.activeMissingKeys(settings).first {
       return String(localized: "\(provider.displayName) API key missing")
     }
+    if EngineFactory.missingServer(settings) { return String(localized: "OpenAI-compatible server address missing") }
     if !hotkeys.isRunning { return String(localized: "Shortcuts not active") }
     return settings.fnEnabled ? String(localized: "Ready: hold Fn") : String(localized: "Ready")
   }

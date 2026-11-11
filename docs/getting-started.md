@@ -26,11 +26,12 @@ The setup window has one card per step. A green check means it's done.
 ![First launch](images/onboarding-personal-light.png)
 
 1. **How will you use diVoice?** Choose **With my own API key**. (With a team, choose **With my team** and paste your invite link.)
-2. **AI provider.** Mistral or OpenAI. You can change the model for each step later.
-3. **API key.** Paste it and click **Save**. It is stored in your Mac's Keychain and sent only to that provider. Then click **Verify**: diVoice speaks a test sentence with the Mac's built-in voice, transcribes it and shows how long each step took.
-4. **Microphone.** Click **Allow the microphone**. diVoice listens only while you hold the key.
-5. **Accessibility.** Click **Open Accessibility settings** and turn diVoice on. macOS may ask for Touch ID or your password, once. diVoice needs it to notice the Fn key and to insert the text in the app you are using.
-6. **🌐 / Fn key.** In **System Settings › Keyboard**, set **Press 🌐 key to** to **Do Nothing**; otherwise macOS opens the emoji picker or its own dictation together with diVoice.
+2. **AI provider.** Mistral or OpenAI, or **OpenAI-compatible** for your own server (LiteLLM, Ollama and others): then type its address and the model to use. You can change the model for each step later.
+3. **Transcription.** Leave it on your AI provider, or choose another: Mistral, OpenAI or ElevenLabs. With ElevenLabs or an OpenAI-compatible server you need two keys, one for the transcription and one for the cleanup and Scribe.
+4. **API key.** Paste it (one for each provider you chose) and click **Save**. It is stored in your Mac's Keychain and sent only to that provider. Then click **Verify**: diVoice speaks a test sentence with the Mac's built-in voice, transcribes it and shows how long each step took.
+5. **Microphone.** Click **Allow the microphone**. diVoice listens only while you hold the key.
+6. **Accessibility.** Click **Open Accessibility settings** and turn diVoice on. macOS may ask for Touch ID or your password, once. diVoice needs it to notice the Fn key and to insert the text in the app you are using.
+7. **🌐 / Fn key.** In **System Settings › Keyboard**, set **Press 🌐 key to** to **Do Nothing**; otherwise macOS opens the emoji picker or its own dictation together with diVoice.
 
 Click **Start**.
 

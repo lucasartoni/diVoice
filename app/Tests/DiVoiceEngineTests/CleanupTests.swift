@@ -85,6 +85,63 @@ private func client(_ http: FakeHTTP, _ provider: ProviderID = .mistral) -> Chat
     #expect(body["service_tier"] as? String == "fast")
   }
 
+  @Test func compatibleServerGetsOnlyStandardParametersAtItsAddress() async throws {
+    let http = FakeHTTP(pieces: ["Domani presentiamo Zentrix al cliente e poi facciamo il punto."])
+    var settings = ChatSettings.cleanupDefaults(.compatible)
+    #expect(settings.provider == .compatible)
+    settings.model = "claude-haiku"
+    settings.prediction = true
+    settings.fastTier = true
+    let server = try #require(ProviderEndpoint.compatibleBaseURL("http://localhost:4000/v1/"))
+    let chat = ChatCompletionsClient(provider: .compatible, endpoint: .compatible(server, apiKey: "sk-litellm"), http: http)
+    let result = await Cleanup.run(request(settings), chat: chat)
+    #expect(result.path == .llm)
+    let call = try #require(http.requests.first)
+    #expect(call.url == "http://localhost:4000/v1/chat/completions")
+    #expect(call.headers["Authorization"] == "Bearer sk-litellm")
+    let body = call.json
+    #expect(body["model"] as? String == "claude-haiku")
+    #expect(body["stream"] as? Bool == true)
+    #expect(body["temperature"] as? Double == 0)
+    #expect(body["max_tokens"] as? Int == raw.utf16.count / 2 + 64)
+    // Parameters only some providers know: never sent.
+    #expect(body["max_completion_tokens"] == nil)
+    #expect(body["reasoning_effort"] == nil)
+    #expect(body["prediction"] == nil)
+    #expect(body["service_tier"] == nil)
+    #expect(body["prompt_cache_key"] == nil)
+    #expect(body["top_p"] == nil)
+  }
+
+  @Test func compatibleServerAddressIsReadHoweverItIsTyped() {
+    func base(_ address: String) -> String? { ProviderEndpoint.compatibleBaseURL(address)?.absoluteString }
+    #expect(base("http://localhost:4000") == "http://localhost:4000")
+    #expect(base(" http://localhost:4000/ ") == "http://localhost:4000")
+    #expect(base("https://llm.example.com/v1") == "https://llm.example.com")
+    #expect(base("https://llm.example.com/v1/chat/completions") == "https://llm.example.com")
+    #expect(base("https://example.com/litellm/v1/") == "https://example.com/litellm")
+    // Without a scheme: http on this Mac and the local network, https elsewhere.
+    #expect(base("localhost:11434") == "http://localhost:11434")
+    #expect(base("192.168.1.20:4000/v1") == "http://192.168.1.20:4000")
+    #expect(base("studio.local:4000") == "http://studio.local:4000")
+    #expect(base("llm.example.com") == "https://llm.example.com")
+    #expect(base("") == nil)
+    #expect(base("ftp://example.com") == nil)
+    #expect(base("http://") == nil)
+  }
+
+  @Test func compatibleServerRunsOnlyCleanupAndScribe() {
+    #expect(ProviderID.compatible.supportsChat)
+    #expect(!ProviderID.compatible.supportsTranscription)
+    let pipeline = PipelineSettings.defaults(.compatible)
+    #expect(pipeline.transcription.provider == .mistral)
+    #expect(pipeline.cleanup == ChatSettings(provider: .compatible, model: ""))
+    #expect(pipeline.scribe == ChatSettings(provider: .compatible, model: ""))
+    #expect(pipeline.providers == [.mistral, .compatible])
+    #expect(ModelCatalog.chatModels(.compatible).isEmpty)
+    #expect(ModelCatalog.chatCapabilities(.compatible, "any-model").reasoning.isEmpty)
+  }
+
   @Test func readsContentBlocksAndStripsQuotes() async {
     let http = FakeHTTP(pieces: ["\"Domani presentiamo Zentrix al cliente e poi facciamo il punto.\""])
     http.contentBlocks = true
