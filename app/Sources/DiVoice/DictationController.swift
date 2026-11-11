@@ -205,6 +205,7 @@ final class DictationController {
     overlay.setMode(mode)
     overlay.setLocked(key: key)
     Sounds.start(settings)
+    appLog.notice("Hands-free \(mode.rawValue, privacy: .public) with \(key, privacy: .public)")
     // Recordings stop at 10 minutes: end it just before, as if the key had been pressed.
     let limit = DispatchWorkItem { [weak self, weak session] in
       guard let self, let session, self.recording === session else { return }

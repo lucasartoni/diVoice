@@ -57,6 +57,22 @@ struct HotkeyTests {
     #expect(m.handle(fn(true, at: 9500)) == [.start(.dictation, timestamp: 9500 * ms)])
   }
 
+  @Test func theGlobeTapMacOSSendsAfterAQuickReleaseIsIgnored() {
+    // Recorded on a MacBook: each quick release of Fn is followed by key 179 down and up.
+    var m = HotkeyStateMachine(triggers: [.fn])
+    #expect(m.handle(fn(true, at: 17883)) == [.start(.dictation, timestamp: 17883 * ms)])
+    #expect(m.handle(fn(false, at: 17978)) == [])
+    #expect(m.handle(.keyDown(keyCode: KeyCode.globeTap, flags: 0, timestamp: 17978 * ms)) == [])
+    #expect(m.handle(fn(true, at: 18092)) == [.lock(.dictation, key: "fn")])
+    #expect(m.handle(fn(false, at: 18217)) == [])
+    #expect(m.handle(.keyDown(keyCode: KeyCode.globeTap, flags: 0, timestamp: 18218 * ms)) == [])
+    #expect(m.isLocked)
+    #expect(m.handle(fn(true, at: 21263)) == [.stop(.dictation, timestamp: 21263 * ms, heldNs: 3380 * ms)])
+    #expect(m.handle(fn(false, at: 21389)) == [])
+    #expect(m.handle(.keyDown(keyCode: KeyCode.globeTap, flags: 0, timestamp: 21389 * ms)) == [])
+    #expect(!m.isHolding)
+  }
+
   @Test func doubleTapWithCtrlLocksScribe() {
     var m = HotkeyStateMachine(triggers: [.fn])
     #expect(m.handle(fn(true, at: 1000, extra: ctrl)) == [.start(.scribe, timestamp: 1000 * ms)])

@@ -18,6 +18,8 @@ public enum KeyCode {
   public static let rightCommand: UInt16 = 54
   public static let rightOption: UInt16 = 61
   public static let escape: UInt16 = 53
+  /// What macOS sends (key down and up) right after a quick tap of 🌐/Fn is released.
+  public static let globeTap: UInt16 = 179
 }
 
 /// A modifier key that starts dictation while held down.
@@ -151,6 +153,8 @@ public struct HotkeyStateMachine: Sendable {
     case let .flagsChanged(keyCode, flags, timestamp):
       return flagsChanged(keyCode: keyCode, flags: flags, timestamp: timestamp)
     case let .keyDown(keyCode, _, timestamp):
+      // Not typing: macOS reporting the tap of 🌐/Fn that was just released.
+      if keyCode == KeyCode.globeTap { return [] }
       switch state {
       case let .holding(trigger, _, _), let .lockedPressed(trigger, _, _):
         state = .suppressed(trigger: trigger)

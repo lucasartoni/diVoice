@@ -2,6 +2,12 @@
 
 All notable changes to diVoice. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org).
 
+## 0.5.2 — Hands-free fix
+
+### Fixed
+
+- **The double tap of Fn didn't start hands-free dictation.** Right after a quick tap of 🌐/Fn, macOS reports that tap as a key of its own, which diVoice took for typing and so ended the double tap. It's now ignored.
+
 ## 0.5.1 — Hands-free
 
 Dictate without holding Fn.
