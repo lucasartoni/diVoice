@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  localization:
+    name: Localization
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -I scripts/check-localization.py
+
+  app:
+    name: App
+    # macOS runners are free for public repositories; private forks run these tests locally.
+    if: ${{ !github.event.repository.private }}
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            app/Vendor
+            tools/sparkle
+          key: sparkle-${{ hashFiles('scripts/fetch-sparkle.sh') }}
+      - run: scripts/test-app.sh

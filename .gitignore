@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Swift / app build
+app/.build/
+app/.swiftpm/
+build/
+dist/
+*.xcarchive
+*.dmg
+*.log
+
+# Signing keys and certificates (never in the repository)
+.signing/
+tools/sparkle/
+app/Vendor/

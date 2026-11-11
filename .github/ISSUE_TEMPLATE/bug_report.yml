@@ -1,0 +1,70 @@
+name: Bug report
+description: Something doesn't work as described in the documentation.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please check [Troubleshooting](https://github.com/tommasoseita/divoice/blob/main/docs/troubleshooting.md) first.
+        **Security issues:** don't report them here; see [SECURITY.md](https://github.com/tommasoseita/divoice/blob/main/SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Slack and click in the message field
+        2. Hold Fn and say "…"
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: diVoice version
+      description: In the menu bar menu, at the bottom.
+      placeholder: "0.5.0 (500)"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "macOS 26.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - Personal, with Mistral
+        - Personal, with OpenAI
+        - Personal, mixed providers
+        - In an organization
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: App you were dictating into
+      placeholder: "Slack, Mail, Visual Studio Code…"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Output of `/usr/bin/log show --last 1h --style compact --predicate 'subsystem == "app.wibo.divoice"'`.
+        Logs never contain what you dictated or your keys, but they do contain app names and your organization's server address: read them before pasting.
+      render: text
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Screenshots, timings from Verify, the language you dictate in.
