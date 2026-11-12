@@ -3,7 +3,7 @@ import Foundation
 public enum ProviderID: String, Codable, Sendable, CaseIterable, Identifiable {
   case mistral
   case openai
-  /// Transcription only (Scribe v2): cleanup and Scribe stay with a chat provider.
+  /// Transcription only (Scribe v3): cleanup and Scribe stay with a chat provider.
   case elevenlabs
   /// Chat only (cleanup and Scribe): any server that speaks OpenAI's chat completions, such as
   /// LiteLLM, Ollama or vLLM, at the address the user gives.
@@ -158,7 +158,14 @@ public enum ModelCatalog {
     ModelInfo(provider: .openai, id: "gpt-6.1-sol", name: "GPT-6.1 Sol", kind: .chat(openAIFrontier)),
     ModelInfo(provider: .openai, id: "gpt-5.4-mini", name: "GPT-5.4 mini", kind: .chat(
       ChatCapabilities(reasoning: [.none, .low, .medium, .high, .xhigh], prediction: false, temperature: false, fastTier: true))),
-    // ElevenLabs: the vocabulary goes in `keyterms`, which cost 20% more.
+    // ElevenLabs: the vocabulary goes in `keyterms`, which cost 20% more. Scribe v3 (10 November
+    // 2026) uses the same endpoints as v2, which stays available.
+    ModelInfo(
+      provider: .elevenlabs, id: "scribe_v3_live", name: "Scribe v3 Live",
+      kind: .transcription(TranscriptionCapabilities(realtime: true, batch: false, keywords: true))),
+    ModelInfo(
+      provider: .elevenlabs, id: "scribe_v3", name: "Scribe v3",
+      kind: .transcription(TranscriptionCapabilities(realtime: false, batch: true, keywords: true))),
     ModelInfo(
       provider: .elevenlabs, id: "scribe_v2_realtime", name: "Scribe v2 Realtime",
       kind: .transcription(TranscriptionCapabilities(realtime: true, batch: false, keywords: true))),
@@ -206,7 +213,9 @@ public enum ModelCatalog {
     switch provider {
     case .mistral: return TranscriptionCapabilities(realtime: id.contains("realtime"), batch: !id.contains("realtime"), keywords: false)
     case .openai: return TranscriptionCapabilities(realtime: true, batch: true, keywords: id.hasPrefix("gpt-transcribe") || id.hasPrefix("gpt-live"))
-    case .elevenlabs: return TranscriptionCapabilities(realtime: id.contains("realtime"), batch: !id.contains("realtime"), keywords: true)
+    case .elevenlabs:
+      let streaming = id.contains("realtime") || id.hasSuffix("_live")
+      return TranscriptionCapabilities(realtime: streaming, batch: !streaming, keywords: true)
     case .compatible: return TranscriptionCapabilities(realtime: false, batch: false, keywords: false)
     }
   }
@@ -233,6 +242,19 @@ public struct TranscriptionSettings: Codable, Sendable, Equatable {
     self.batchMaxAudioMs = batchMaxAudioMs
   }
 
+  /// Settings left on the defaults of an earlier version move to the current ones: ElevenLabs's
+  /// Scribe v2 pair became Scribe v3. Anything the user chose stays as it is.
+  public func upgradingDefaults() -> TranscriptionSettings {
+    let scribeV2 = TranscriptionSettings(provider: .elevenlabs, mode: .hybrid, realtimeModel: "scribe_v2_realtime", batchModel: "scribe_v2")
+    guard provider == .elevenlabs, mode == scribeV2.mode, realtimeModel == scribeV2.realtimeModel, batchModel == scribeV2.batchModel else {
+      return self
+    }
+    var upgraded = self
+    upgraded.realtimeModel = "scribe_v3_live"
+    upgraded.batchModel = "scribe_v3"
+    return upgraded
+  }
+
   public static func defaults(_ provider: ProviderID) -> TranscriptionSettings {
     switch provider {
     case .mistral, .compatible:
@@ -244,7 +266,7 @@ public struct TranscriptionSettings: Codable, Sendable, Equatable {
       TranscriptionSettings(provider: .openai, mode: .realtime, realtimeModel: "gpt-transcribe", batchModel: "gpt-transcribe")
     case .elevenlabs:
       // Like Voxtral: the whole recording to the batch model at release, the stream beyond 25 s.
-      TranscriptionSettings(provider: .elevenlabs, mode: .hybrid, realtimeModel: "scribe_v2_realtime", batchModel: "scribe_v2")
+      TranscriptionSettings(provider: .elevenlabs, mode: .hybrid, realtimeModel: "scribe_v3_live", batchModel: "scribe_v3")
     }
   }
 }

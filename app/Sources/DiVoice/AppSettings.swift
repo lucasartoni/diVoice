@@ -48,7 +48,9 @@ final class AppSettings: ObservableObject {
       "useScreenContext": true,
       "learnFromCorrections": true,
     ])
-    pipeline = Self.load(PipelineSettings.self, "pipeline", defaults) ?? .defaults(.mistral)
+    var pipeline = Self.load(PipelineSettings.self, "pipeline", defaults) ?? .defaults(.mistral)
+    pipeline.transcription = pipeline.transcription.upgradingDefaults()
+    self.pipeline = pipeline
     compatibleBaseURL = defaults.string(forKey: "compatibleBaseURL") ?? ""
     language = defaults.string(forKey: "language") ?? Self.systemLanguage
     fnEnabled = defaults.bool(forKey: "fnEnabled")

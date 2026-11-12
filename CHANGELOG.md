@@ -4,10 +4,40 @@ All notable changes to diVoice. The format follows [Keep a Changelog](https://ke
 
 ## Unreleased
 
+### Changed
+
+- **Plain `http` for an OpenAI-compatible server only where it is safe to offer.** An address on your Mac (`localhost`, `127.0.0.1`) is accepted as before. One on a private network (`10.x.x.x`, `172.16–31.x.x`, `192.168.x.x`, `.local` names and the like) is accepted with a warning that the connection isn't encrypted. Anywhere else diVoice now asks for `https`, instead of saving an address macOS would refuse to connect to.
+
+## 0.6.0 — Your own AI server
+
+Cleanup and Scribe on any OpenAI-compatible server, and the transcription provider at the first launch. Contributed by Luca Sartoni ([#1](https://github.com/tommasoseita/diVoice/pull/1)).
+
 ### Added
 
 - **OpenAI-compatible servers for cleanup and Scribe.** Point diVoice at a LiteLLM proxy, Ollama or any other server with OpenAI's chat completions API: type its address and key in Settings › Models, choose **OpenAI-compatible** for Cleanup or Scribe and type the model name. Personal mode only.
 - **ElevenLabs at the first launch.** The setup now asks which provider transcribes, so you can choose ElevenLabs and paste its key there, without opening the settings.
+
+## 0.5.3 — Scribe v3
+
+ElevenLabs's newest transcription models.
+
+### Changed
+
+- **ElevenLabs transcribes with Scribe v3**, released on 10 November 2026: `scribe_v3_live` while you speak and `scribe_v3` at release. Settings still on the old Scribe v2 defaults move to v3; a model you typed yourself stays. Scribe v2 remains available in the model fields. It works through an organization's server too, with no change to diServer.
+
+## 0.5.2 — Hands-free fix
+
+### Fixed
+
+- **The double tap of Fn didn't start hands-free dictation.** Right after a quick tap of 🌐/Fn, macOS reports that tap as a key of its own, which diVoice took for typing and so ended the double tap. It's now ignored.
+
+## 0.5.1 — Hands-free
+
+Dictate without holding Fn.
+
+### Added
+
+- **Hands-free dictation.** Double-tap Fn and speak without holding it; press Fn once to finish and the text is processed as usual. With Ctrl held, the double tap starts Scribe hands-free. The overlay shows which key finishes it, Esc cancels, and it ends by itself just before 10 minutes.
 
 ## 0.5.0 — Context and style
 

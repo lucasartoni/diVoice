@@ -322,7 +322,7 @@
 "Your instructions" = "Istruzioni tue";
 "diVoice recognizes most apps by itself. Assign the others to a kind of app, or a website by a word of its window title." = "diVoice riconosce da sé la maggior parte delle app. Assegna le altre a un tipo di app, o un sito tramite una parola del titolo della finestra.";
 "diVoice recognizes the app you're writing in and adapts the text to it. Choose the tone for each kind of app, and add your own instructions: they apply to dictation and to Scribe." = "diVoice riconosce l'app in cui scrivi e adatta il testo. Scegli il tono per ogni tipo di app e aggiungi le tue istruzioni: valgono per la dettatura e per Scribe.";
-"Transcription only (Scribe v2)" = "Solo trascrizione (Scribe v2)";
+"Transcription only" = "Solo trascrizione";
 "Use the text on screen as context" = "Usa il testo sullo schermo come contesto";
 "When you start dictating, diVoice reads the conversation and the text around the cursor, to spell names and match the tone. It goes only to the AI provider and is never saved. Never in password fields." = "Quando inizi a dettare, diVoice legge la conversazione e il testo intorno al cursore, per scrivere bene i nomi e adattare il tono. Va solo al provider di IA e non viene mai salvato. Mai nei campi password.";
 "Context" = "Contesto";
@@ -332,6 +332,9 @@
 "Learn from my corrections" = "Impara dalle mie correzioni";
 "Learned from your corrections" = "Imparato dalle tue correzioni";
 "When you fix a dictated text, diVoice learns: names go into your dictionary, and after a few corrections in a kind of app it notes how you like to write there. The corrections stay on this Mac for 7 days." = "Quando correggi un testo dettato, diVoice impara: i nomi entrano nel tuo dizionario e, dopo qualche correzione in un tipo di app, annota come ti piace scrivere lì. Le correzioni restano su questo Mac per 7 giorni.";
+"Fn to finish" = "Fn per finire";
+"Right ⌘ to finish" = "⌘ destro per finire";
+"Right ⌥ to finish" = "⌥ destro per finire";
 "Add your OpenAI-compatible server's address in diVoice's settings" = "Aggiungi l'indirizzo del tuo server compatibile con OpenAI nelle impostazioni di diVoice";
 "OpenAI-compatible server address missing" = "Manca l'indirizzo del server compatibile con OpenAI";
 "OpenAI-compatible server" = "Server compatibile con OpenAI";
@@ -343,3 +346,5 @@
 "Server address" = "Indirizzo del server";
 "LiteLLM, Ollama or any other server with OpenAI's chat completions API." = "LiteLLM, Ollama o qualsiasi altro server con l'API chat completions di OpenAI.";
 "Cleanup and Scribe only" = "Solo pulizia e Scribe";
+"Not encrypted: your text and the key travel in clear on your local network. Use it only on a network you trust." = "Non cifrata: il testo e la chiave viaggiano in chiaro sulla rete locale. Usala solo su una rete di cui ti fidi.";
+"Plain http is accepted only for this Mac and private network addresses: use https." = "L'http semplice è accettato solo per questo Mac e per gli indirizzi di rete privata: usa https.";

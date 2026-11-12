@@ -27,7 +27,7 @@ Pay only the AI you choose, at cost, or join your team's server.
 - **Over 90% cheaper.** There's no subscription: you pay only the AI provider, at its prices. A full day of dictation costs a few cents, about a dollar a month, against the $12–15 a month of a typical dictation app ([how it adds up](docs/providers-and-models.md#cost)).
 - **Made to fit you.** A tone for each kind of app, your own instructions, your dictionary, the apps and websites you use, and preferences it learns from your corrections.
 - **Extend it with Claude Code.** diVoice is open source and small: open the repository in [Claude Code](https://claude.com/claude-code) and ask for the feature you want, from a new kind of app to a new shortcut, provider or workflow ([how it's built](docs/architecture.md)).
-- **Your speech-to-text, your choice.** Mistral Voxtral, OpenAI or ElevenLabs Scribe v2, with a different model for each step, and you can switch at any time.
+- **Your speech-to-text, your choice.** Mistral Voxtral, OpenAI or ElevenLabs Scribe v3, with a different model for each step, and you can switch at any time.
 
 ## What it does
 
