@@ -36,6 +36,8 @@ final class DictationController {
     var context: CapturedContext?
     var finished = false
     var timeout: DispatchWorkItem?
+    /// Hands-free: the stop just before the 10-minute limit.
+    var lockLimit: DispatchWorkItem?
 
     init(id: UUID, mode: DictationMode, pressNs: UInt64, run: DictationRun, relay: RelayConnection?) {
       self.id = id
@@ -81,6 +83,8 @@ final class DictationController {
     case let .modeChanged(mode):
       recording?.mode = mode
       overlay.setMode(mode)
+    case let .lock(mode, key):
+      lock(mode, key: key)
     case let .stop(mode, timestamp, _):
       stop(mode: mode, releaseNs: timestamp)
     case let .cancel(reason):
@@ -194,8 +198,29 @@ final class DictationController {
     }
   }
 
+  /// A double tap: the dictation goes on hands-free until the key is pressed again.
+  private func lock(_ mode: DictationMode, key: String) {
+    guard let session = recording else { return }
+    session.mode = mode
+    overlay.setMode(mode)
+    overlay.setLocked(key: key)
+    Sounds.start(settings)
+    appLog.notice("Hands-free \(mode.rawValue, privacy: .public) with \(key, privacy: .public)")
+    // Recordings stop at 10 minutes: end it just before, as if the key had been pressed.
+    let limit = DispatchWorkItem { [weak self, weak session] in
+      guard let self, let session, self.recording === session else { return }
+      self.stop(mode: session.mode, releaseNs: MonotonicClock.nowNs())
+    }
+    session.lockLimit = limit
+    DispatchQueue.main.asyncAfter(deadline: .now() + Self.maxHandsFreeSeconds, execute: limit)
+  }
+
+  /// Just under the engine's 10 minutes.
+  static let maxHandsFreeSeconds: TimeInterval = 590
+
   private func stop(mode: DictationMode, releaseNs: UInt64) {
     guard let session = recording else { return }
+    session.lockLimit?.cancel()
     recording = nil
     session.mode = mode
     session.timeline.releaseNs = releaseNs
@@ -236,6 +261,7 @@ final class DictationController {
   private func cancel(_ reason: CancelReason) {
     guard let session = recording else { return }
     recording = nil
+    session.lockLimit?.cancel()
     _ = audio.stop()
     session.finished = true
     session.framesContinuation.finish()

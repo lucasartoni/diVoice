@@ -6,8 +6,10 @@ Start with **Settings › Models › Verify**: it checks each step with your key
 
 - **Accessibility is off.** diVoice needs it to see the key. **System Settings › Privacy & Security › Accessibility**: turn diVoice on. If it's already on, turn it off and on again (macOS sometimes keeps a stale entry after an update from a differently signed build).
 - **The 🌐 key does something else.** In **System Settings › Keyboard**, set **Press 🌐 key to** to **Do Nothing**. Otherwise macOS opens the emoji picker or switches input source.
+- **A double tap of Fn also opens macOS's dictation.** That's the **Start Dictation (Press 🌐 Key Twice)** choice of the same setting: set **Press 🌐 key to** to **Do Nothing**.
+- **Hands-free doesn't start.** The two taps must be quick: each shorter than about a third of a second, and the second within 0.4 s of the first. A slower first tap counts as a short dictation.
 - **External keyboard without Fn.** Hold **right ⌘** instead (changeable to right ⌥ in **Settings › General**).
-- **You tapped instead of holding.** Presses shorter than 150 ms are ignored, so a tap of Fn keeps working as before.
+- **You tapped instead of holding.** A single quick tap is ignored, so a tap of Fn keeps working as before. Two quick taps start hands-free dictation: press Fn once more to finish.
 - **Another key was pressed with Fn.** Fn plus another key is a shortcut (Fn+arrows, Fn+F keys), so diVoice cancels the dictation.
 
 ## The overlay shows an error
