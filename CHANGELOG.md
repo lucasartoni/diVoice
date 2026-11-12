@@ -6,7 +6,7 @@ All notable changes to diVoice. The format follows [Keep a Changelog](https://ke
 
 ### Added
 
-- **OpenAI-compatible servers for cleanup and Scribe.** Point diVoice at a LiteLLM proxy, Ollama or any other server with OpenAI's chat completions API: type its address and key in Settings › Models, choose **OpenAI-compatible** for Cleanup or Scribe and type the model name. Personal mode only.
+- **OpenAI-compatible servers for cleanup and Scribe.** Point diVoice at a LiteLLM proxy, Ollama or any other server with OpenAI's chat completions API: type its address and key in Settings › Models, choose **OpenAI-compatible** for Cleanup or Scribe and type the model name. Plain `http` is accepted for your Mac and private network addresses, with a warning that the connection isn't encrypted; elsewhere it must be `https`. Personal mode only.
 - **ElevenLabs at the first launch.** The setup now asks which provider transcribes, so you can choose ElevenLabs and paste its key there, without opening the settings.
 
 ## 0.5.0 — Context and style
