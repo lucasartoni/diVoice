@@ -2,9 +2,9 @@
 
 All notable changes to diVoice. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org).
 
-## Unreleased
+## 0.6.0 — Your own AI server
 
-Contributed by Luca Sartoni ([#1](https://github.com/tommasoseita/diVoice/pull/1)).
+Cleanup and Scribe on any OpenAI-compatible server, and the transcription provider at the first launch. Contributed by Luca Sartoni ([#1](https://github.com/tommasoseita/diVoice/pull/1)).
 
 ### Added
 
