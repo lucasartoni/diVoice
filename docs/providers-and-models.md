@@ -8,7 +8,7 @@ diVoice uses three models, each for one step:
 | **Cleanup** | Turns the raw text into what you meant to write (every dictation) |
 | **Scribe** | Edits your dictation, or changes the selected text (Ctrl+Fn) |
 
-Each step can use [Mistral](https://mistral.ai) or [OpenAI](https://openai.com), with any model the provider offers. Transcription can also use [ElevenLabs](https://elevenlabs.io) Scribe v2 (ElevenLabs has no chat models, so cleanup and Scribe stay with Mistral or OpenAI). Cleanup and Scribe can also use an [OpenAI-compatible server](#openai-compatible-servers) such as LiteLLM. Choose them in **Settings › Models**, or at the first launch; **Use Mistral for everything** and **Use OpenAI for everything** restore the defaults.
+Each step can use [Mistral](https://mistral.ai) or [OpenAI](https://openai.com), with any model the provider offers. Transcription can also use [ElevenLabs](https://elevenlabs.io) Scribe v3 (ElevenLabs has no chat models, so cleanup and Scribe stay with Mistral or OpenAI). Cleanup and Scribe can also use an [OpenAI-compatible server](#openai-compatible-servers) such as LiteLLM. Choose them in **Settings › Models**, or at the first launch; **Use Mistral for everything** and **Use OpenAI for everything** restore the defaults.
 
 ![Models](images/settings-models-light.png)
 
@@ -25,9 +25,9 @@ The defaults come from measurements on real-world dictations (see [Latency](late
 
 **Mistral** is the faster default. **OpenAI** transcribes slightly more accurately on our test set, and its cleanup is slower unless fast processing is on.
 
-### ElevenLabs Scribe v2
+### ElevenLabs Scribe v3
 
-Choosing ElevenLabs for transcription uses `scribe_v2_realtime` while you speak and `scribe_v2` on the whole recording at release (hybrid, like Mistral). You need an ElevenLabs key for the transcription and a Mistral or OpenAI key for the cleanup and Scribe.
+Choosing ElevenLabs for transcription uses `scribe_v3_live` while you speak and `scribe_v3` on the whole recording at release (hybrid, like Mistral). Scribe v3, released on 10 November 2026, uses the same API as Scribe v2: `scribe_v2_realtime` and `scribe_v2` stay available in the model fields, and settings still on the old defaults move to v3 by themselves. You need an ElevenLabs key for the transcription and a Mistral or OpenAI key for the cleanup and Scribe.
 
 - **Dictionary:** your terms go to ElevenLabs as `keyterms`: at most 100 per dictation (50 while streaming, of up to 20 characters each). ElevenLabs charges 20% more for transcriptions with keyterms, and beyond 100 terms it bills every request as at least 20 seconds: diVoice never sends more than 100.
 - **Context:** while streaming, the text already in the field goes as `previous_text`, so the transcription continues it.

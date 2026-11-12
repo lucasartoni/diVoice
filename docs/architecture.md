@@ -35,7 +35,7 @@ Swift package targets:
 
 ### One dictation
 
-1. **Key down.** A `CGEventTap` sees Fn (or right ⌘/⌥). Presses shorter than 150 ms are ignored; Esc or another key cancels the dictation.
+1. **Key down.** A `CGEventTap` sees Fn (or right ⌘/⌥). A quick release may be the first of a double tap: the recording goes on for 0.4 s, and a second press locks it hands-free until the key is pressed again; without one, a press shorter than 150 ms is ignored. Esc cancels; another key cancels a held dictation (it was a shortcut) but not a hands-free one. The state machine is `HotkeyStateMachine` in DiVoiceCore.
 2. **Context.** Through Accessibility, the app reads the active app, the window title, the selection and the characters before the cursor, each with a 150 ms timeout.
 3. **Audio.** `AVAudioEngine` captures the microphone, converted to 16-bit mono PCM (16 kHz for Mistral, 24 kHz for OpenAI) and streamed in 100 ms chunks. The microphone is prepared in advance, so the first syllable isn't lost.
 4. **Transcription while you speak.** A realtime WebSocket to the provider receives the audio and the dictionary terms as bias.

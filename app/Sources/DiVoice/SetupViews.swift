@@ -847,7 +847,7 @@ struct ModelsView: View {
 extension ModelsView {
   /// What a provider that doesn't run the whole pipeline is for.
   fileprivate func keyDetail(_ provider: ProviderID) -> String? {
-    if !provider.supportsChat { return String(localized: "Transcription only (Scribe v2)") }
+    if !provider.supportsChat { return String(localized: "Transcription only") }
     if !provider.supportsTranscription { return String(localized: "Cleanup and Scribe only") }
     return nil
   }

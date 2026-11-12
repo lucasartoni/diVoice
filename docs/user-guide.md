@@ -26,11 +26,15 @@
 
 If a password field has the focus, macOS doesn't allow typing into it: the text stays on the clipboard and the overlay says "Text copied: press ⌘V". The same happens in the rare apps that don't accept pasted text.
 
-**To cancel**, press <kbd>Esc</kbd> while holding the key. A tap shorter than 150 ms does nothing, and pressing another key together with Fn (for example Fn+→) is treated as a shortcut, not a dictation.
+**Hands-free:** double-tap Fn, quickly, and speak without holding anything. The overlay shows **Fn to finish**; press Fn once when you're done, and the text is cleaned up and inserted as usual. Meanwhile you can type or click elsewhere; <kbd>Esc</kbd> cancels. A hands-free dictation ends by itself just before 10 minutes.
+
+![Hands-free](images/overlay-recording-hands-free-light.png)
+
+**To cancel**, press <kbd>Esc</kbd> while holding the key. A single quick tap does nothing, and pressing another key together with Fn (for example Fn+→) is treated as a shortcut, not a dictation.
 
 ## Scribe
 
-Hold <kbd>Ctrl</kbd>+<kbd>Fn</kbd>, or press Ctrl while you are already holding Fn.
+Hold <kbd>Ctrl</kbd>+<kbd>Fn</kbd>, or press Ctrl while you are already holding Fn. For Scribe hands-free, hold Ctrl and double-tap Fn; press Fn once when you're done, and Scribe rewrites what you said.
 
 **Without a selection, Scribe rewrites what you dictate** as you would have written it by hand, taking your time: it rephrases freely, picks better words, restructures sentences, puts ideas in a logical order, removes repetitions and uses lists where you enumerate things. Even a short message comes out clearly better written. It follows the tone you chose for the app and the conversation on screen. It keeps:
 
@@ -52,10 +56,12 @@ While Scribe writes, the overlay says so; the text goes straight into your app w
 | Shortcut | Action |
 |---|---|
 | Hold <kbd>Fn</kbd> | Dictate |
+| Double-tap <kbd>Fn</kbd> | Dictate hands-free; press <kbd>Fn</kbd> again to finish |
 | Hold <kbd>Ctrl</kbd>+<kbd>Fn</kbd> | Scribe |
+| Hold <kbd>Ctrl</kbd> and double-tap <kbd>Fn</kbd> | Scribe hands-free; press <kbd>Fn</kbd> again to finish |
 | Hold right <kbd>⌘</kbd> | Dictate, on keyboards without Fn (changeable to right <kbd>⌥</kbd> or off) |
 | Hold <kbd>Ctrl</kbd>+right <kbd>⌘</kbd> | Scribe, on keyboards without Fn |
-| <kbd>Esc</kbd> while holding | Cancel |
+| <kbd>Esc</kbd> while holding, or hands-free | Cancel |
 
 On some keyboard layouts right ⌥ types characters such as @ and #: prefer right ⌘ there.
 
@@ -67,6 +73,7 @@ The small pill at the bottom of the screen shows what diVoice is doing:
 |---|---|
 | ![Recording](images/overlay-recording-light.png) | Recording: orange dot and waveform |
 | ![Recording for Scribe](images/overlay-recording-scribe-light.png) | Recording for Scribe |
+| ![Hands-free](images/overlay-recording-hands-free-light.png) | Hands-free, after a double tap: press Fn to finish |
 | ![Transcribing](images/overlay-transcribing-light.png) | Transcribing and cleaning up |
 | ![Scribe rewriting](images/overlay-scribe-rewriting-light.png) | Scribe rewriting |
 | ![Text copied](images/overlay-copied-light.png) | The app doesn't accept typing, such as a password field: press ⌘V to paste |

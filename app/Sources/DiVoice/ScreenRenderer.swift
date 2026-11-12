@@ -29,10 +29,11 @@ enum ScreenRenderer {
       }
 
       // The overlay, in each state, over a neutral backdrop.
-      for (name, phase, mode) in overlayStates {
+      for (name, phase, mode, locked) in overlayStates {
         let model = OverlayModel()
         model.phase = phase
         model.mode = mode
+        model.lockedKey = locked ? HotkeyTrigger.fn.id : nil
         model.levels = (0..<OverlayModel.bars).map { Float(0.15 + 0.6 * abs(sin(Double($0) * 0.7))) }
         save("overlay-\(name)", OverlayView(model: model), size: NSSize(width: 440, height: 84), backdrop: true)
       }
@@ -88,13 +89,15 @@ enum ScreenRenderer {
     }
   }
 
-  private static let overlayStates: [(String, OverlayModel.Phase, DictationMode)] = [
-    ("recording", .recording, .dictation),
-    ("recording-scribe", .recording, .scribe),
-    ("transcribing", .processing, .dictation),
-    ("scribe-rewriting", .processing, .scribe),
-    ("copied", .info("Text copied: press ⌘V"), .dictation),
-    ("error", .error("Microphone not available"), .dictation),
+  private static let overlayStates: [(String, OverlayModel.Phase, DictationMode, Bool)] = [
+    ("recording", .recording, .dictation, false),
+    ("recording-scribe", .recording, .scribe, false),
+    ("recording-hands-free", .recording, .dictation, true),
+    ("recording-scribe-hands-free", .recording, .scribe, true),
+    ("transcribing", .processing, .dictation, false),
+    ("scribe-rewriting", .processing, .scribe, false),
+    ("copied", .info("Text copied: press ⌘V"), .dictation, false),
+    ("error", .error("Microphone not available"), .dictation, false),
   ]
 
   // MARK: Sample data
